@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧪 Prueba Laura - WhiteMoon</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#0a0a12;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;margin:0}
+  .test-box{max-width:600px;background:#13131e;border:1px solid #7c4dff;border-radius:20px;padding:40px;text-align:center}
+  h1{color:#7c4dff;font-size:2rem;margin-bottom:20px}
+  p{line-height:1.7;margin-bottom:16px;color:#c0c0d0}
+  .arrow{font-size:3rem;animation:bounce 2s infinite;color:#00d4aa;margin:20px 0}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+  .tip{background:rgba(0,212,170,.1);border:1px solid #00d4aa;color:#a0ffd0;padding:16px;border-radius:12px;margin-top:24px;font-size:.9rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="test-box">
+  <h1>🧪 Prueba de Laura</h1>
+  <p>Si todo está bien configurado, verás un <strong style="color:#7c4dff">botón morado</strong> abajo a la derecha.</p>
+  <div class="arrow">↘️</div>
+  <p>Haz clic en <strong>"Habla con Laura IA"</strong> y prueba la llamada.</p>
+  <div class="tip">
+    ✅ Si Laura te saluda → <strong>TODO FUNCIONA</strong>, puedes pegarlo en whitemoon.es<br><br>
+    ❌ Si no ves el botón o da error → revisa que las claves sean correctas
+  </div>
+</div>
+
+<!-- BLOQUE DE LAURA -->
+<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/index.js"></script>
+
+<style>
+  .laura-btn-wrap{position:fixed;bottom:24px;right:24px;z-index:99998;font-family:'Outfit','Inter',sans-serif}
+  .laura-btn{display:flex;align-items:center;gap:12px;padding:14px 22px;background:linear-gradient(135deg,#7c4dff,#5c35cc);color:#fff;border:none;border-radius:50px;box-shadow:0 10px 30px rgba(124,77,255,.4);cursor:pointer;font-size:.95rem;font-weight:600;transition:all .3s;font-family:inherit}
+  .laura-btn:hover{transform:translateY(-2px);box-shadow:0 15px 40px rgba(124,77,255,.55)}
+  .laura-btn.active{background:linear-gradient(135deg,#ef4444,#dc2626);animation:pulse-red 2s infinite}
+  @keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}70%{box-shadow:0 0 0 15px rgba(239,68,68,0)}}
+  .laura-btn svg{width:22px;height:22px;fill:#fff}
+  .laura-badge{position:absolute;top:-8px;right:-8px;background:#00d4aa;color:#000;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:10px;animation:laura-bounce 2s infinite}
+  @keyframes laura-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  .laura-modal{position:fixed;bottom:90px;right:24px;width:340px;background:#13131e;border:1px solid #7c4dff;border-radius:20px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);color:#fff;z-index:99999;display:none;animation:laura-in .3s}
+  @keyframes laura-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .laura-modal.show{display:block}
+  .laura-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .laura-ava{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#7c4dff,#5c35cc);display:flex;align-items:center;justify-content:center;font-size:1.6rem}
+  .laura-name{font-size:1rem;font-weight:700;margin:0}
+  .laura-status{font-size:.78rem;color:#00d4aa;display:flex;align-items:center;gap:5px}
+  .laura-status::before{content:'';width:7px;height:7px;border-radius:50%;background:#00d4aa;animation:pulse-green 2s infinite}
+  @keyframes pulse-green{0%,100%{opacity:1}50%{opacity:.3}}
+  .laura-desc{font-size:.86rem;line-height:1.5;color:#c0c0d0;margin-bottom:14px}
+  .laura-controls{display:flex;gap:8px}
+  .laura-c-btn{flex:1;padding:12px;background:#7c4dff;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:.86rem;font-family:inherit;transition:all .2s}
+  .laura-c-btn:hover{background:#5c35cc}
+  .laura-c-btn.end{background:#ef4444}
+  .laura-wave{display:flex;gap:3px;align-items:center;height:30px;justify-content:center;margin:10px 0}
+  .laura-wave span{width:3px;background:#7c4dff;border-radius:2px;animation:wave 1.2s infinite ease-in-out}
+  .laura-wave span:nth-child(1){animation-delay:-.8s}
+  .laura-wave span:nth-child(2){animation-delay:-.6s}
+  .laura-wave span:nth-child(3){animation-delay:-.4s}
+  .laura-wave span:nth-child(4){animation-delay:-.2s}
+  .laura-wave span:nth-child(5){animation-delay:0s}
+  @keyframes wave{0%,100%{height:8px}50%{height:24px}}
+  .laura-wave.hidden{display:none}
+  .laura-footer{font-size:.68rem;color:#6a6a7a;text-align:center;margin-top:10px}
+</style>
+
+<div class="laura-btn-wrap">
+  <button class="laura-btn" id="lauraBtn" onclick="lauraToggle()">
+    <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm5 10c0 2.76-2.24 5-5 5s-5-2.24-5-5H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/></svg>
+    <span id="lauraBtnTxt">Habla con Laura IA</span>
+    <span class="laura-badge">DEMO</span>
+  </button>
+</div>
+
+<div class="laura-modal" id="lauraModal">
+  <div class="laura-head">
+    <div class="laura-ava">🎙️</div>
+    <div>
+      <div class="laura-name">Laura · Asistente IA</div>
+      <div class="laura-status" id="lauraStatus">Lista para atenderte</div>
+    </div>
+  </div>
+  <div class="laura-desc" id="lauraDesc">
+    Soy el agente comercial IA de WhiteMoon. Te explico los servicios, resuelvo dudas y agendo reunión con Cristóbal si te interesa.
+  </div>
+  <div class="laura-wave hidden" id="lauraWave">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="laura-controls">
+    <button class="laura-c-btn" id="lauraStart" onclick="lauraStart()">Empezar llamada</button>
+    <button class="laura-c-btn end" id="lauraEnd" onclick="lauraEnd()" style="display:none">Colgar</button>
+  </div>
+  <div class="laura-footer">Powered by WhiteMoon · Demo gratuita</div>
+</div>
+
+<script>
+(function(){
+  var VAPI_PUBLIC_KEY = '28d35f10-3dd0-4089-91c7-da600a26bfd7';
+  var LAURA_ASSISTANT_ID = 'c977e7e3-d28b-4267-b882-efa766ac3cc3';
+  
+  var vapi = null;
+  var isOnCall = false;
+  
+  function initVapi(){
+    if(typeof Vapi === 'undefined'){setTimeout(initVapi, 500); return;}
+    vapi = new Vapi(VAPI_PUBLIC_KEY);
+    
+    vapi.on('call-start', function(){
+      isOnCall = true;
+      document.getElementById('lauraStatus').textContent = 'En llamada...';
+      document.getElementById('lauraBtn').classList.add('active');
+      document.getElementById('lauraBtnTxt').textContent = 'Llamada activa';
+      document.getElementById('lauraStart').style.display = 'none';
+      document.getElementById('lauraEnd').style.display = 'block';
+      document.getElementById('lauraWave').classList.remove('hidden');
+      document.getElementById('lauraDesc').textContent = '📞 Conectado con Laura.';
+    });
+    
+    vapi.on('call-end', function(){
+      isOnCall = false;
+      document.getElementById('lauraStatus').textContent = 'Llamada finalizada';
+      document.getElementById('lauraBtn').classList.remove('active');
+      document.getElementById('lauraBtnTxt').textContent = 'Habla con Laura IA';
+      document.getElementById('lauraStart').style.display = 'block';
+      document.getElementById('lauraEnd').style.display = 'none';
+      document.getElementById('lauraWave').classList.add('hidden');
+      document.getElementById('lauraDesc').textContent = '✅ Gracias por probar Laura. ¡Funciona correctamente!';
+    });
+    
+    vapi.on('speech-start', function(){
+      document.getElementById('lauraStatus').textContent = 'Laura hablando...';
+    });
+    
+    vapi.on('speech-end', function(){
+      document.getElementById('lauraStatus').textContent = 'Escuchándote...';
+    });
+    
+    vapi.on('error', function(e){
+      console.error('Error:', e);
+      document.getElementById('lauraStatus').textContent = 'Error en llamada';
+      document.getElementById('lauraDesc').textContent = '⚠️ Error. Revisa consola (F12).';
+    });
+  }
+  
+  window.lauraToggle = function(){
+    document.getElementById('lauraModal').classList.toggle('show');
+  };
+  
+  window.lauraStart = function(){
+    if(!vapi){alert('Espera un segundo, cargando...'); return;}
+    document.getElementById('lauraStatus').textContent = 'Conectando...';
+    vapi.start(LAURA_ASSISTANT_ID);
+  };
+  
+  window.lauraEnd = function(){
+    if(vapi && isOnCall){vapi.stop();}
+  };
+  
+  initVapi();
+})();
+</script>
+
+</body>
+</html>
